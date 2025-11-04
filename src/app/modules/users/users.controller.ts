@@ -5,12 +5,13 @@ import httpStatus from "http-status";
 import catchAsync from "../../utils/catchAsync";
 
 const getAllUsers = catchAsync(async (req, res) => {
-  const result = await UserServices.getAllUsers();
+  const result = await UserServices.getAllUsers(req.query);
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "Users retrieved successfully",
-    data: result,
+    data: { users: result.data, meta: result.meta },
   });
 });
 
