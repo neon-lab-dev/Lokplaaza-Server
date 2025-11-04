@@ -4,6 +4,16 @@ import sendResponse from "../../utils/sendResponse";
 import httpStatus from "http-status";
 import catchAsync from "../../utils/catchAsync";
 
+const getAllUsers = catchAsync(async (req, res) => {
+  const result = await UserServices.getAllUsers();
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Users retrieved successfully",
+    data: result,
+  });
+});
+
 const getMe = catchAsync(async (req, res) => {
   const userId = req.user.userId;
   const result = await UserServices.getMe(userId);
@@ -16,5 +26,6 @@ const getMe = catchAsync(async (req, res) => {
 });
 
 export const UserControllers = {
+  getAllUsers,
   getMe,
 };

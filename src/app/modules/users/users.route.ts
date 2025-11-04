@@ -7,10 +7,8 @@ import { UserRole } from "../auth/auth.constannts";
 
 const router = express.Router();
 
-router.get(
-  "/me",
-  auth(UserRole.admin, UserRole.user),
-  UserControllers.getMe
-);
+router.get("/all", auth(UserRole.admin), UserControllers.getAllUsers);
+
+router.get("/me", auth(UserRole.admin, UserRole.user), UserControllers.getMe);
 
 export const userRoutes = router;
