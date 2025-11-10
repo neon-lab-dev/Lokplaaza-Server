@@ -18,6 +18,15 @@ const userSchema = new Schema<TUser, UserModel>(
       trim: true,
       lowercase: true,
     },
+    phoneNumber: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
+    dateOfBirth: {
+      type: Date,
+    },
     password: {
       type: String,
       required: true,
@@ -26,6 +35,7 @@ const userSchema = new Schema<TUser, UserModel>(
     role: {
       type: String,
       enum: ["admin", "user"],
+      default: "user",
     },
   },
   {

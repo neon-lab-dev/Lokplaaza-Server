@@ -30,6 +30,15 @@ const userSchema = new mongoose_1.Schema({
         trim: true,
         lowercase: true,
     },
+    phoneNumber: {
+        type: String,
+        required: true,
+        unique: true,
+        trim: true,
+    },
+    dateOfBirth: {
+        type: Date,
+    },
     password: {
         type: String,
         required: true,
@@ -38,6 +47,7 @@ const userSchema = new mongoose_1.Schema({
     role: {
         type: String,
         enum: ["admin", "user"],
+        default: "user",
     },
 }, {
     timestamps: true,
