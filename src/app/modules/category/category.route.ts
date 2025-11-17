@@ -15,7 +15,9 @@ router.post(
 
 router.get("/", CategoryControllers.getAllCategories);
 
-router.delete(
+router.get("/:categoryId", CategoryControllers.getSingleCategory);
+
+router.put(
   "/update/:categoryId",
   auth(UserRole.admin, UserRole.moderator),
   multerUpload.single("file"),

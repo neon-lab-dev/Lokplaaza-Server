@@ -37,11 +37,28 @@ const getAllCategories = catchAsync(async (req, res) => {
   });
 });
 
+// Get Single Category
+const getSingleCategory = catchAsync(async (req, res) => {
+  const { categoryId } = req.params;
+  const result = await CategoryServices.getSingleCategory(categoryId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Category fetched successfully",
+    data: result,
+  });
+});
+
 // Update Category
 const updateCategory = catchAsync(async (req, res) => {
   const { categoryId } = req.params;
   const file = req.file;
-  const result = await CategoryServices.updateCategory(categoryId, req.body , file);
+  const result = await CategoryServices.updateCategory(
+    categoryId,
+    req.body,
+    file
+  );
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -67,6 +84,7 @@ const deleteCategory = catchAsync(async (req, res) => {
 export const CategoryControllers = {
   addCategory,
   getAllCategories,
+  getSingleCategory,
   updateCategory,
   deleteCategory,
 };
