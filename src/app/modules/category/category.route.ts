@@ -16,6 +16,13 @@ router.post(
 router.get("/", CategoryControllers.getAllCategories);
 
 router.delete(
+  "/update/:categoryId",
+  auth(UserRole.admin, UserRole.moderator),
+  multerUpload.single("file"),
+  CategoryControllers.updateCategory
+);
+
+router.delete(
   "/delete/:categoryId",
   auth(UserRole.admin, UserRole.moderator),
   CategoryControllers.deleteCategory

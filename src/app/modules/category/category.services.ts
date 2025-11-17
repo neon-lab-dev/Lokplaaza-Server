@@ -69,13 +69,32 @@ const getSingleCategory = async (id: string) => {
 };
 
 // Update Category
-const updateCategory = async (id: string, payload: Partial<TCategory>) => {
+const updateCategory = async (
+  id: string,
+  payload: Partial<TCategory>,
+  file: Express.Multer.File | undefined
+) => {
   const isExist = await Category.findById(id);
   if (!isExist) {
     throw new AppError(httpStatus.NOT_FOUND, "Category not found");
   }
 
-  return await Category.findByIdAndUpdate(id, payload, {
+  let imageUrl: string | undefined;
+
+  if (file) {
+    const imageName = `${payload?.name || isExist.name}-${Date.now()}`;
+    const path = file.path;
+
+    const { secure_url } = await sendImageToCloudinary(imageName, path);
+    imageUrl = secure_url;
+  }
+
+  const updatePayload = {
+    ...payload,
+    ...(imageUrl && { imageUrl }),
+  };
+
+  return await Category.findByIdAndUpdate(id, updatePayload, {
     new: true,
     runValidators: true,
   });
