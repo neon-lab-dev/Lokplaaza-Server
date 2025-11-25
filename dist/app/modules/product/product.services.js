@@ -16,9 +16,9 @@ exports.ProductServices = void 0;
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const http_status_1 = __importDefault(require("http-status"));
 const product_model_1 = __importDefault(require("./product.model"));
-const AppError_1 = __importDefault(require("../../../errors/AppError"));
-const sendImageToCloudinary_1 = require("../../../utils/sendImageToCloudinary");
 const cloudinary_1 = require("cloudinary");
+const sendImageToCloudinary_1 = require("../../utils/sendImageToCloudinary");
+const AppError_1 = __importDefault(require("../../errors/AppError"));
 cloudinary_1.v2.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
@@ -33,7 +33,7 @@ const addProduct = (payload, files) => __awaiter(void 0, void 0, void 0, functio
     }
     // Generate custom productId like HFP-1234
     const randomNumber = Math.floor(1000 + Math.random() * 9000); // 4-digit random number
-    const productId = `HFP-${randomNumber}`;
+    const productId = `LOK-${randomNumber}`;
     const payloadData = Object.assign(Object.assign({}, payload), { productId,
         imageUrls });
     const result = yield product_model_1.default.create(payloadData);

@@ -6,10 +6,7 @@ const ProductSchema = new mongoose_1.Schema({
     imageUrls: { type: [String], required: true },
     name: { type: String, required: true },
     description: { type: String, required: true },
-    clothDetails: { type: String },
-    productStory: { type: String },
     category: { type: String, required: true },
-    madeIn: { type: String },
     colors: [
         {
             colorName: { type: String, required: true },

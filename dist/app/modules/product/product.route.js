@@ -6,8 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProductRoutes = void 0;
 const express_1 = __importDefault(require("express"));
 const product_controller_1 = require("./product.controller");
-const auth_constannts_1 = require("../auth/auth.constannts");
 const auth_1 = __importDefault(require("../../middlewares/auth"));
+const auth_constannts_1 = require("../auth/auth.constannts");
 const multer_config_1 = require("../../config/multer.config");
 const router = express_1.default.Router();
 // For admin only

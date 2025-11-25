@@ -15,9 +15,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProductControllers = void 0;
 const http_status_1 = __importDefault(require("http-status"));
 const product_services_1 = require("./product.services");
-const catchAsync_1 = __importDefault(require("../../../utils/catchAsync"));
-const sendResponse_1 = __importDefault(require("../../../utils/sendResponse"));
-const AppError_1 = __importDefault(require("../../../errors/AppError"));
+const catchAsync_1 = __importDefault(require("../../utils/catchAsync"));
+const AppError_1 = __importDefault(require("../../errors/AppError"));
+const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 // Add product (For admin)
 const addProduct = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const files = req.files;
