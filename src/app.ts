@@ -14,7 +14,7 @@ app.use(cookieParser());
 app.use(express.json());
 
 // app.use(express.static("./uploads"));
-app.use(cors({ origin: ['http://localhost:3000', 'https://hanjifinance-admin.vercel.app'], credentials: true }));
+app.use(cors({ origin: ['http://localhost:3000', 'https://lokplaaza.netlify.app'], credentials: true }));
 
 // Root route
 app.get('/', (req, res) => {

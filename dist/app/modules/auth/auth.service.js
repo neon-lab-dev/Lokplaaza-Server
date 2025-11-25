@@ -102,7 +102,7 @@ const forgetPassword = (email) => __awaiter(void 0, void 0, void 0, function* ()
     };
     const resetToken = (0, auth_utils_1.createToekn)(jwtpayload, config_1.default.jwt_access_secret, "10m");
     const resetLink = `${config_1.default.reset_password_ui_url}/reset-password?email=${user === null || user === void 0 ? void 0 : user.email}&token=${resetToken}`;
-    yield (0, sendEmail_1.sendEmail)(user === null || user === void 0 ? void 0 : user.email, resetLink);
+    yield (0, sendEmail_1.sendEmail)(user === null || user === void 0 ? void 0 : user.email, "Reset your password", resetLink);
 });
 const resetPassword = (payload, token) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield auth_model_1.User.isUserExists(payload === null || payload === void 0 ? void 0 : payload.email);
