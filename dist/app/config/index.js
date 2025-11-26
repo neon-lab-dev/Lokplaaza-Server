@@ -21,7 +21,6 @@ exports.default = {
     razorpay_api_key: process.env.RAZORPAY_API_KEY,
     razorpay_api_secret: process.env.RAZORPAY_API_SECRET,
     payment_redirect_url: process.env.PAYMENT_REDIRECT_URL,
-    boardroom_banter_plan_id: process.env.BOARDROOM_BANTER_PLAN_ID,
     smtp_email: process.env.SMTP_EMAIL,
     smtp_pass: process.env.SMTP_PASS
 };

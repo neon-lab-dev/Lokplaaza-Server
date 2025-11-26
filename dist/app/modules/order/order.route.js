@@ -15,7 +15,7 @@ router.post("/create", (0, auth_1.default)(auth_constannts_1.UserRole.admin, aut
 router.get("/my-orders", (0, auth_1.default)(auth_constannts_1.UserRole.admin, auth_constannts_1.UserRole.moderator, auth_constannts_1.UserRole.user), order_controller_1.OrderControllers.getMyOrders);
 // For admin/moderator only
 router.get("/", (0, auth_1.default)(auth_constannts_1.UserRole.admin, auth_constannts_1.UserRole.moderator), order_controller_1.OrderControllers.getAllOrders);
-router.get("/:orderId", (0, auth_1.default)(auth_constannts_1.UserRole.admin, auth_constannts_1.UserRole.moderator), order_controller_1.OrderControllers.getSingleOrderById);
-router.get("/user/:userCustomId", (0, auth_1.default)(auth_constannts_1.UserRole.admin, auth_constannts_1.UserRole.moderator), order_controller_1.OrderControllers.getOrdersByUserId);
 router.put("/update-status", (0, auth_1.default)(auth_constannts_1.UserRole.admin, auth_constannts_1.UserRole.moderator), order_controller_1.OrderControllers.updateDeliveryStatus);
+router.get("/user/:userCustomId", (0, auth_1.default)(auth_constannts_1.UserRole.admin, auth_constannts_1.UserRole.moderator), order_controller_1.OrderControllers.getOrdersByUserId);
+router.get("/:orderId", (0, auth_1.default)(auth_constannts_1.UserRole.admin, auth_constannts_1.UserRole.moderator), order_controller_1.OrderControllers.getSingleOrderById);
 exports.OrderRoutes = router;

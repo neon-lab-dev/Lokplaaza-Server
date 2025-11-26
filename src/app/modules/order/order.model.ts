@@ -14,7 +14,6 @@ const ProductOrderSchema = new Schema<TOrder>(
   {
     orderId: { type: String, required: true, unique: true },
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    userCustomId: { type: String, required: true },
 
     orderedItems: [OrderItemSchema],
     totalAmount: { type: Number, required: true },

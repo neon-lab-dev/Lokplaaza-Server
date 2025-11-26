@@ -12,7 +12,6 @@ export interface TProductOrderItem {
 export interface TOrder {
   orderId: string;
   userId: ObjectId;
-  userCustomId: string;
   orderedItems: TProductOrderItem[];
   totalAmount: number;
   status: "pending" | "shipped" | "delivered" | "cancelled";

@@ -70,8 +70,8 @@ const getSingleOrderById = (0, catchAsync_1.default)((req, res) => __awaiter(voi
 }));
 // Get all orders for a particular user
 const getOrdersByUserId = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { userCustomId } = req.params;
-    const result = yield order_service_1.OrderService.geOrdersByUserId(userCustomId);
+    const { userId } = req.params;
+    const result = yield order_service_1.OrderService.geOrdersByUserId(userId);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
         success: true,
@@ -81,7 +81,7 @@ const getOrdersByUserId = (0, catchAsync_1.default)((req, res) => __awaiter(void
 }));
 // Get logged-in user's orders (user)
 const getMyOrders = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const userId = req.user._id;
+    const userId = req.user.userId;
     const { keyword, status, page = "1", limit = "10" } = req.query;
     const result = yield order_service_1.OrderService.getMyOrders(userId, keyword, status, Number(page), Number(limit));
     (0, sendResponse_1.default)(res, {

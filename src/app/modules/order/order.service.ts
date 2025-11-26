@@ -86,8 +86,7 @@ const createOrder = async (user: any, payload: TOrder) => {
 
   const payloadData = {
     orderId,
-    userId: user?._id,
-    userCustomId: user?.userId,
+    userId: user?.userId,
     orderedItems,
     totalAmount: payload.totalAmount,
     status: "pending",
@@ -169,8 +168,8 @@ const getSingleOrderById = async (orderId: string) => {
 };
 
 // Get all orders for a particular user
-const geOrdersByUserId = async (userCustomId: string) => {
-  const result = await Order.find({ userCustomId });
+const geOrdersByUserId = async (userId: string) => {
+  const result = await Order.find({ userId });
   if (!result || result.length === 0) {
     throw new AppError(httpStatus.NOT_FOUND, "No orders found for this user");
   }
@@ -227,7 +226,7 @@ const updateDeliveryStatus = async (payload: {
   status: string;
 }) => {
   const result = await Order.findOneAndUpdate(
-    { orderId: payload.orderId },
+    { _id: payload.orderId },
     { status: payload.status },
     { new: true }
   );

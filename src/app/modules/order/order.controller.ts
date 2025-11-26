@@ -76,9 +76,9 @@ const getSingleOrderById = catchAsync(async (req, res) => {
 
 // Get all orders for a particular user
 const getOrdersByUserId = catchAsync(async (req, res) => {
-  const { userCustomId } = req.params;
+  const { userId } = req.params;
   const result =
-    await OrderService.geOrdersByUserId(userCustomId);
+    await OrderService.geOrdersByUserId(userId);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -90,7 +90,7 @@ const getOrdersByUserId = catchAsync(async (req, res) => {
 
 // Get logged-in user's orders (user)
 const getMyOrders = catchAsync(async (req, res) => {
-  const userId = req.user._id;
+  const userId = req.user.userId;
   const { keyword, status, page = "1", limit = "10" } = req.query;
 
   const result = await OrderService.getMyOrders(

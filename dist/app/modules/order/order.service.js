@@ -74,8 +74,7 @@ const createOrder = (user, payload) => __awaiter(void 0, void 0, void 0, functio
     const orderedItems = payload === null || payload === void 0 ? void 0 : payload.orderedItems;
     const payloadData = {
         orderId,
-        userId: user === null || user === void 0 ? void 0 : user._id,
-        userCustomId: user === null || user === void 0 ? void 0 : user.userId,
+        userId: user === null || user === void 0 ? void 0 : user.userId,
         orderedItems,
         totalAmount: payload.totalAmount,
         status: "pending",
@@ -133,8 +132,8 @@ const getSingleOrderById = (orderId) => __awaiter(void 0, void 0, void 0, functi
     return result;
 });
 // Get all orders for a particular user
-const geOrdersByUserId = (userCustomId) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield order_model_1.Order.find({ userCustomId });
+const geOrdersByUserId = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield order_model_1.Order.find({ userId });
     if (!result || result.length === 0) {
         throw new AppError_1.default(http_status_1.default.NOT_FOUND, "No orders found for this user");
     }
@@ -171,7 +170,7 @@ const getMyOrders = (userId_1, keyword_1, status_1, ...args_1) => __awaiter(void
 });
 // Get my orders (user)
 const updateDeliveryStatus = (payload) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield order_model_1.Order.findOneAndUpdate({ orderId: payload.orderId }, { status: payload.status }, { new: true });
+    const result = yield order_model_1.Order.findOneAndUpdate({ _id: payload.orderId }, { status: payload.status }, { new: true });
     return result;
 });
 exports.OrderService = {
