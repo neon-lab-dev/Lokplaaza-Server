@@ -123,7 +123,7 @@ const getAllOrders = (keyword_1, status_1, ...args_1) => __awaiter(void 0, [keyw
 });
 // Get single order by ID
 const getSingleOrderById = (orderId) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield order_model_1.Order.findOne({ orderId })
+    const result = yield order_model_1.Order.findById(orderId)
         .populate("userId", "name email phoneNumber pinCode city addressLine1 addressLine2")
         .populate("orderedItems.productId", "name imageUrls category");
     if (!result) {
@@ -155,7 +155,7 @@ const getMyOrders = (userId_1, keyword_1, status_1, ...args_1) => __awaiter(void
             .limit(limit)
             .sort({ createdAt: -1 })
             .populate("userId", "name phoneNumber city pinCode addressLine1 addressLine2")
-            .populate("orderedItems.productId", "name"),
+            .populate("orderedItems.productId", "name productId"),
         order_model_1.Order.countDocuments(query),
     ]);
     return {

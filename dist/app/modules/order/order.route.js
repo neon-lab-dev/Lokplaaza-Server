@@ -17,5 +17,5 @@ router.get("/my-orders", (0, auth_1.default)(auth_constannts_1.UserRole.admin, a
 router.get("/", (0, auth_1.default)(auth_constannts_1.UserRole.admin, auth_constannts_1.UserRole.moderator), order_controller_1.OrderControllers.getAllOrders);
 router.put("/update-status", (0, auth_1.default)(auth_constannts_1.UserRole.admin, auth_constannts_1.UserRole.moderator), order_controller_1.OrderControllers.updateDeliveryStatus);
 router.get("/user/:userCustomId", (0, auth_1.default)(auth_constannts_1.UserRole.admin, auth_constannts_1.UserRole.moderator), order_controller_1.OrderControllers.getOrdersByUserId);
-router.get("/:orderId", (0, auth_1.default)(auth_constannts_1.UserRole.admin, auth_constannts_1.UserRole.moderator), order_controller_1.OrderControllers.getSingleOrderById);
+router.get("/:orderId", (0, auth_1.default)(auth_constannts_1.UserRole.admin, auth_constannts_1.UserRole.moderator, auth_constannts_1.UserRole.user), order_controller_1.OrderControllers.getSingleOrderById);
 exports.OrderRoutes = router;

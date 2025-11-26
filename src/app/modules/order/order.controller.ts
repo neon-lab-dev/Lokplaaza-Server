@@ -55,7 +55,7 @@ const getAllOrders = catchAsync(async (req, res) => {
     success: true,
     message: "All Orders fetched successfully",
     data: {
-      productOrders: result.data,
+      orders: result.data,
       pagination: result.meta,
     },
   });

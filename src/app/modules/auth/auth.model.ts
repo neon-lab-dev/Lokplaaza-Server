@@ -24,8 +24,23 @@ const userSchema = new Schema<TUser, UserModel>(
       unique: true,
       trim: true,
     },
+    imageUrl: {
+      type: String,
+    },
     dateOfBirth: {
       type: Date,
+    },
+    city: {
+      type: String,
+    },
+    pinCode: {
+      type: String,
+    },
+    addressLine1: {
+      type: String,
+    },
+    addressLine2: {
+      type: String,
     },
     password: {
       type: String,

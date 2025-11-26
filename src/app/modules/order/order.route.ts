@@ -14,6 +14,6 @@ router.get("/my-orders", auth(UserRole.admin, UserRole.moderator, UserRole.user)
 router.get("/", auth(UserRole.admin, UserRole.moderator), OrderControllers.getAllOrders);
 router.put("/update-status", auth(UserRole.admin, UserRole.moderator), OrderControllers.updateDeliveryStatus);
 router.get("/user/:userCustomId", auth(UserRole.admin, UserRole.moderator), OrderControllers.getOrdersByUserId);
-router.get("/:orderId", auth(UserRole.admin, UserRole.moderator), OrderControllers.getSingleOrderById);
+router.get("/:orderId", auth(UserRole.admin, UserRole.moderator, UserRole.user), OrderControllers.getSingleOrderById);
 
 export const OrderRoutes = router;

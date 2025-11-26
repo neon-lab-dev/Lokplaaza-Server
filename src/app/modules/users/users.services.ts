@@ -1,5 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import httpStatus from 'http-status';
+import AppError from '../../errors/AppError';
 import { User } from '../auth/auth.model';
+import { sendImageToCloudinary } from '../../utils/sendImageToCloudinary';
 
 
 const getAllUsers = async (query: Record<string, any>) => {
@@ -54,8 +57,49 @@ const getMe = async (userId: string) => {
   return result;
 };
 
+const updateProfile = async (
+  userId: string,
+  payload: Record<string, any>,
+  file?: Express.Multer.File
+) => {
+  // ✅ Check user
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, "User not found");
+  }
+
+  // ✅ Handle image upload
+  if (file) {
+    const imageName = `${userId}-${Date.now()}`;
+    const { secure_url } = await sendImageToCloudinary(
+      imageName,
+      file.path
+    );
+
+    payload.imageUrl = secure_url;
+  }
+
+  // ✅ Update user with whatever comes
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    payload,
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+
+  if (!updatedUser) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Profile update failed");
+  }
+
+  return updatedUser;
+};
+
+
 
 export const UserServices = {
   getAllUsers,
   getMe,
+  updateProfile
 };

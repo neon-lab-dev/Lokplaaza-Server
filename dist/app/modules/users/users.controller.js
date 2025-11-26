@@ -37,7 +37,20 @@ const getMe = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, 
         data: result,
     });
 }));
+// Update profile
+const updateProfile = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const file = req.file;
+    const userId = req.user.userId;
+    const result = yield users_services_1.UserServices.updateProfile(userId, req.body, file);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: "Profile updated successfully",
+        data: result,
+    });
+}));
 exports.UserControllers = {
     getAllUsers,
     getMe,
+    updateProfile
 };

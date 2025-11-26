@@ -8,10 +8,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserServices = void 0;
 /* eslint-disable @typescript-eslint/no-explicit-any */
+const http_status_1 = __importDefault(require("http-status"));
+const AppError_1 = __importDefault(require("../../errors/AppError"));
 const auth_model_1 = require("../auth/auth.model");
+const sendImageToCloudinary_1 = require("../../utils/sendImageToCloudinary");
 const getAllUsers = (query) => __awaiter(void 0, void 0, void 0, function* () {
     const page = Number(query.page) || 1;
     const limit = Number(query.limit) || 10;
@@ -53,7 +59,30 @@ const getMe = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield auth_model_1.User.findById(userId);
     return result;
 });
+const updateProfile = (userId, payload, file) => __awaiter(void 0, void 0, void 0, function* () {
+    // ✅ Check user
+    const user = yield auth_model_1.User.findById(userId);
+    if (!user) {
+        throw new AppError_1.default(http_status_1.default.NOT_FOUND, "User not found");
+    }
+    // ✅ Handle image upload
+    if (file) {
+        const imageName = `${userId}-${Date.now()}`;
+        const { secure_url } = yield (0, sendImageToCloudinary_1.sendImageToCloudinary)(imageName, file.path);
+        payload.imageUrl = secure_url;
+    }
+    // ✅ Update user with whatever comes
+    const updatedUser = yield auth_model_1.User.findByIdAndUpdate(userId, payload, {
+        new: true,
+        runValidators: true,
+    });
+    if (!updatedUser) {
+        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, "Profile update failed");
+    }
+    return updatedUser;
+});
 exports.UserServices = {
     getAllUsers,
     getMe,
+    updateProfile
 };

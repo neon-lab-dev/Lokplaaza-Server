@@ -10,8 +10,13 @@ export type TUser= {
   _id:string;
   name: string;
   email: string;
+  imageUrl : string;
   phoneNumber: string;
   dateOfBirth : Date;
+  city : string;
+  pinCode : string;
+  addressLine1 : string;
+  addressLine2 : string;
   password: string;
   role: TUserRole;
   createdAt: Date;

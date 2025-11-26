@@ -153,7 +153,7 @@ const getAllOrders = async (
 
 // Get single order by ID
 const getSingleOrderById = async (orderId: string) => {
-  const result = await Order.findOne({ orderId })
+  const result = await Order.findById( orderId )
     .populate(
       "userId",
       "name email phoneNumber pinCode city addressLine1 addressLine2"
@@ -205,7 +205,7 @@ const getMyOrders = async (
         "userId",
         "name phoneNumber city pinCode addressLine1 addressLine2"
       )
-      .populate("orderedItems.productId", "name"),
+      .populate("orderedItems.productId", "name productId"),
     Order.countDocuments(query),
   ]);
 

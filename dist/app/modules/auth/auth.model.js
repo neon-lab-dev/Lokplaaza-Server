@@ -36,8 +36,23 @@ const userSchema = new mongoose_1.Schema({
         unique: true,
         trim: true,
     },
+    imageUrl: {
+        type: String,
+    },
     dateOfBirth: {
         type: Date,
+    },
+    city: {
+        type: String,
+    },
+    pinCode: {
+        type: String,
+    },
+    addressLine1: {
+        type: String,
+    },
+    addressLine2: {
+        type: String,
     },
     password: {
         type: String,
