@@ -17,22 +17,13 @@ exports.CategoryServices = void 0;
 const http_status_1 = __importDefault(require("http-status"));
 const AppError_1 = __importDefault(require("../../errors/AppError"));
 const category_model_1 = __importDefault(require("./category.model"));
-const sendImageToCloudinary_1 = require("../../utils/sendImageToCloudinary");
 // Create Category
-const addCategory = (payload, file) => __awaiter(void 0, void 0, void 0, function* () {
+const addCategory = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     const isExist = yield category_model_1.default.findOne({ name: payload.name });
     if (isExist) {
         throw new AppError_1.default(http_status_1.default.BAD_REQUEST, "Category already exists");
     }
-    let imageUrl = "";
-    if (file) {
-        const imageName = `${payload.name}-${Date.now()}`;
-        const path = file.path;
-        const { secure_url } = yield (0, sendImageToCloudinary_1.sendImageToCloudinary)(imageName, path);
-        imageUrl = secure_url;
-    }
-    const payloadData = Object.assign(Object.assign({}, payload), { imageUrl });
-    return yield category_model_1.default.create(payloadData);
+    return yield category_model_1.default.create(payload);
 });
 // Get All Categories with search + pagination
 const getAllCategories = (keyword_1, ...args_1) => __awaiter(void 0, [keyword_1, ...args_1], void 0, function* (keyword, page = 1, limit = 10) {
@@ -64,20 +55,12 @@ const getSingleCategory = (id) => __awaiter(void 0, void 0, void 0, function* ()
     return result;
 });
 // Update Category
-const updateCategory = (id, payload, file) => __awaiter(void 0, void 0, void 0, function* () {
+const updateCategory = (id, payload) => __awaiter(void 0, void 0, void 0, function* () {
     const isExist = yield category_model_1.default.findById(id);
     if (!isExist) {
         throw new AppError_1.default(http_status_1.default.NOT_FOUND, "Category not found");
     }
-    let imageUrl;
-    if (file) {
-        const imageName = `${(payload === null || payload === void 0 ? void 0 : payload.name) || isExist.name}-${Date.now()}`;
-        const path = file.path;
-        const { secure_url } = yield (0, sendImageToCloudinary_1.sendImageToCloudinary)(imageName, path);
-        imageUrl = secure_url;
-    }
-    const updatePayload = Object.assign(Object.assign({}, payload), (imageUrl && { imageUrl }));
-    return yield category_model_1.default.findByIdAndUpdate(id, updatePayload, {
+    return yield category_model_1.default.findByIdAndUpdate(id, payload, {
         new: true,
         runValidators: true,
     });

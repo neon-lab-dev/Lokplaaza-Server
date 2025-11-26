@@ -19,8 +19,7 @@ const http_status_1 = __importDefault(require("http-status"));
 const category_services_1 = require("./category.services");
 // Add Category
 const addCategory = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const file = req.file;
-    const result = yield category_services_1.CategoryServices.addCategory(req.body, file);
+    const result = yield category_services_1.CategoryServices.addCategory(req.body);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.CREATED,
         success: true,
@@ -42,29 +41,6 @@ const getAllCategories = (0, catchAsync_1.default)((req, res) => __awaiter(void 
         },
     });
 }));
-// Get Single Category
-const getSingleCategory = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { categoryId } = req.params;
-    const result = yield category_services_1.CategoryServices.getSingleCategory(categoryId);
-    (0, sendResponse_1.default)(res, {
-        statusCode: http_status_1.default.OK,
-        success: true,
-        message: "Category fetched successfully",
-        data: result,
-    });
-}));
-// Update Category
-const updateCategory = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { categoryId } = req.params;
-    const file = req.file;
-    const result = yield category_services_1.CategoryServices.updateCategory(categoryId, req.body, file);
-    (0, sendResponse_1.default)(res, {
-        statusCode: http_status_1.default.OK,
-        success: true,
-        message: "Category updated successfully",
-        data: result,
-    });
-}));
 // Delete Category
 const deleteCategory = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { categoryId } = req.params;
@@ -79,7 +55,5 @@ const deleteCategory = (0, catchAsync_1.default)((req, res) => __awaiter(void 0,
 exports.CategoryControllers = {
     addCategory,
     getAllCategories,
-    getSingleCategory,
-    updateCategory,
     deleteCategory,
 };
