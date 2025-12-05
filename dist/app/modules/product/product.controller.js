@@ -16,15 +16,18 @@ exports.ProductControllers = void 0;
 const http_status_1 = __importDefault(require("http-status"));
 const product_services_1 = require("./product.services");
 const catchAsync_1 = __importDefault(require("../../utils/catchAsync"));
-const AppError_1 = __importDefault(require("../../errors/AppError"));
 const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
+const AppError_1 = __importDefault(require("../../errors/AppError"));
 // Add product (For admin)
 const addProduct = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     const files = req.files;
-    if (files && files.length > 4) {
+    const imageFiles = (files === null || files === void 0 ? void 0 : files.files) || [];
+    const glbFile = (_a = files === null || files === void 0 ? void 0 : files.glbFile) === null || _a === void 0 ? void 0 : _a[0];
+    if (imageFiles.length > 4) {
         throw new AppError_1.default(http_status_1.default.BAD_REQUEST, "You can upload maximum 4 images");
     }
-    const result = yield product_services_1.ProductServices.addProduct(req.body, files);
+    const result = yield product_services_1.ProductServices.addProduct(req.body, imageFiles, glbFile);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
         success: true,

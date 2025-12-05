@@ -19,25 +19,51 @@ const product_model_1 = __importDefault(require("./product.model"));
 const cloudinary_1 = require("cloudinary");
 const sendImageToCloudinary_1 = require("../../utils/sendImageToCloudinary");
 const AppError_1 = __importDefault(require("../../errors/AppError"));
+const uploadToS3_1 = require("../../utils/uploadToS3");
 cloudinary_1.v2.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 // Add product (admin only)
-const addProduct = (payload, files) => __awaiter(void 0, void 0, void 0, function* () {
+const addProduct = (payload, imageFiles, glbFile) => __awaiter(void 0, void 0, void 0, function* () {
     let imageUrls = [];
-    if (files && files.length > 0) {
-        const uploadedImages = yield Promise.all(files.map((file) => (0, sendImageToCloudinary_1.sendImageToCloudinary)(file.originalname, file.path)));
-        imageUrls = uploadedImages.map((img) => img.secure_url);
+    let arFileUrl;
+    try {
+        // Upload images to Cloudinary
+        if (imageFiles && imageFiles.length > 0) {
+            const uploadedImages = yield Promise.all(imageFiles.map((file) => (0, sendImageToCloudinary_1.sendImageToCloudinary)(file.originalname, file.path)));
+            imageUrls = uploadedImages.map((img) => img.secure_url);
+        }
+        // Upload GLB file to S3
+        if (glbFile) {
+            console.log("Uploading GLB file to S3:", glbFile.originalname);
+            // Optional: Validate file type
+            if (!glbFile.mimetype.includes('gltf') && !glbFile.originalname.endsWith('.glb')) {
+                throw new Error('Invalid file type. Only GLB files are allowed.');
+            }
+            // Upload to S3
+            const uploadedGlb = yield (0, uploadToS3_1.uploadToS3)(glbFile, 'products/glb');
+            arFileUrl = uploadedGlb.url;
+            console.log("GLB file uploaded to S3:", arFileUrl);
+        }
+        // Generate custom productId like LOK-1234
+        const randomNumber = Math.floor(1000 + Math.random() * 9000);
+        const productId = `LOK-${randomNumber}`;
+        const payloadData = Object.assign(Object.assign({}, payload), { productId,
+            imageUrls,
+            arFileUrl });
+        const result = yield product_model_1.default.create(payloadData);
+        return result;
     }
-    // Generate custom productId like HFP-1234
-    const randomNumber = Math.floor(1000 + Math.random() * 9000); // 4-digit random number
-    const productId = `LOK-${randomNumber}`;
-    const payloadData = Object.assign(Object.assign({}, payload), { productId,
-        imageUrls });
-    const result = yield product_model_1.default.create(payloadData);
-    return result;
+    catch (error) {
+        // Cleanup: If product creation fails, delete uploaded files
+        if (arFileUrl) {
+            // You might want to implement cleanup logic here
+            console.error('Product creation failed, but files were uploaded:', error);
+        }
+        throw error;
+    }
 });
 // Get all products
 const getAllProducts = (keyword_1, category_1, minPrice_1, maxPrice_1, ...args_1) => __awaiter(void 0, [keyword_1, category_1, minPrice_1, maxPrice_1, ...args_1], void 0, function* (keyword, category, minPrice, maxPrice, page = 1, limit = 10) {

@@ -6,13 +6,16 @@ import { multerUpload } from "../../config/multer.config";
 
 const router = express.Router();
 
-// For admin only
 router.post(
   "/add",
   auth(UserRole.admin, UserRole.moderator),
-  multerUpload.array("files", 4),
+  multerUpload.fields([
+    { name: "files", maxCount: 4 },   // Images
+    { name: "glbFile", maxCount: 1 }, // AR model
+  ]),
   ProductControllers.addProduct
 );
+
 
 // Get all products
 router.get("/", ProductControllers.getAllProducts);

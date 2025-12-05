@@ -1,19 +1,26 @@
 import httpStatus from "http-status";
 import { ProductServices } from "./product.services";
 import catchAsync from "../../utils/catchAsync";
-import AppError from "../../errors/AppError";
 import sendResponse from "../../utils/sendResponse";
+import AppError from "../../errors/AppError";
 
 // Add product (For admin)
 const addProduct = catchAsync(async (req, res) => {
-  const files = req.files as Express.Multer.File[];
-  if (files && files.length > 4) {
+  const files = req.files as {
+    [fieldname: string]: Express.Multer.File[];
+  };
+
+  const imageFiles = files?.files || [];
+  const glbFile = files?.glbFile?.[0];
+
+  if (imageFiles.length > 4) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
       "You can upload maximum 4 images"
     );
   }
-  const result = await ProductServices.addProduct(req.body, files);
+
+  const result = await ProductServices.addProduct(req.body, imageFiles, glbFile);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -22,6 +29,8 @@ const addProduct = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+
 
 // Get all products
 const getAllProducts = catchAsync(async (req, res) => {

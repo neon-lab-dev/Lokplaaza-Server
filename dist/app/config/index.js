@@ -22,5 +22,9 @@ exports.default = {
     razorpay_api_secret: process.env.RAZORPAY_API_SECRET,
     payment_redirect_url: process.env.PAYMENT_REDIRECT_URL,
     smtp_email: process.env.SMTP_EMAIL,
-    smtp_pass: process.env.SMTP_PASS
+    smtp_pass: process.env.SMTP_PASS,
+    awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    awsSecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    awsRegion: process.env.AWS_REGION,
+    awsBucketName: process.env.AWS_BUCKET_NAME
 };

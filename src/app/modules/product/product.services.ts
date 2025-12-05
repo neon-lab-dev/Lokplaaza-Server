@@ -5,6 +5,7 @@ import { TProduct } from "./product.interface";
 import { v2 as cloudinary } from "cloudinary";
 import { sendImageToCloudinary } from "../../utils/sendImageToCloudinary";
 import AppError from "../../errors/AppError";
+import { uploadToS3 } from "../../utils/uploadToS3";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -12,33 +13,64 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+
 // Add product (admin only)
 const addProduct = async (
   payload: TProduct,
-  files?: Express.Multer.File[]
+  imageFiles?: Express.Multer.File[],
+  glbFile?: Express.Multer.File
 ) => {
   let imageUrls: string[] = [];
+  let arFileUrl: string | undefined;
 
-  if (files && files.length > 0) {
-    const uploadedImages = await Promise.all(
-      files.map((file) => sendImageToCloudinary(file.originalname, file.path))
-    );
-    imageUrls = uploadedImages.map((img) => img.secure_url);
+  try {
+    // Upload images to Cloudinary
+    if (imageFiles && imageFiles.length > 0) {
+      const uploadedImages = await Promise.all(
+        imageFiles.map((file) => sendImageToCloudinary(file.originalname, file.path))
+      );
+      imageUrls = uploadedImages.map((img) => img.secure_url);
+    }
+
+    // Upload GLB file to S3
+    if (glbFile) {
+      console.log("Uploading GLB file to S3:", glbFile.originalname);
+      
+      // Optional: Validate file type
+      if (!glbFile.mimetype.includes('gltf') && !glbFile.originalname.endsWith('.glb')) {
+        throw new Error('Invalid file type. Only GLB files are allowed.');
+      }
+      
+      // Upload to S3
+      const uploadedGlb = await uploadToS3(glbFile, 'products/glb');
+      arFileUrl = uploadedGlb.url;
+      console.log("GLB file uploaded to S3:", arFileUrl);
+    }
+
+    // Generate custom productId like LOK-1234
+    const randomNumber = Math.floor(1000 + Math.random() * 9000);
+    const productId = `LOK-${randomNumber}`;
+
+    const payloadData = {
+      ...payload,
+      productId,
+      imageUrls,
+      arFileUrl,
+    };
+
+    const result = await Product.create(payloadData);
+    return result;
+    
+  } catch (error) {
+    // Cleanup: If product creation fails, delete uploaded files
+    if (arFileUrl) {
+      // You might want to implement cleanup logic here
+      console.error('Product creation failed, but files were uploaded:', error);
+    }
+    throw error;
   }
-
-  // Generate custom productId like HFP-1234
-  const randomNumber = Math.floor(1000 + Math.random() * 9000); // 4-digit random number
-  const productId = `LOK-${randomNumber}`;
-
-  const payloadData = {
-    ...payload,
-    productId,
-    imageUrls,
-  };
-
-  const result = await Product.create(payloadData);
-  return result;
 };
+
 
 // Get all products
 const getAllProducts = async (

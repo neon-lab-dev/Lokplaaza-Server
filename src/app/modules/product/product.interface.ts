@@ -1,6 +1,7 @@
 export type TProduct = {
   productId: string;
   imageUrls: string[];
+  arFileUrl?: string;
   name: string;
   category: string;
   description: string;

@@ -10,8 +10,10 @@ const auth_1 = __importDefault(require("../../middlewares/auth"));
 const auth_constannts_1 = require("../auth/auth.constannts");
 const multer_config_1 = require("../../config/multer.config");
 const router = express_1.default.Router();
-// For admin only
-router.post("/add", (0, auth_1.default)(auth_constannts_1.UserRole.admin, auth_constannts_1.UserRole.moderator), multer_config_1.multerUpload.array("files", 4), product_controller_1.ProductControllers.addProduct);
+router.post("/add", (0, auth_1.default)(auth_constannts_1.UserRole.admin, auth_constannts_1.UserRole.moderator), multer_config_1.multerUpload.fields([
+    { name: "files", maxCount: 4 }, // Images
+    { name: "glbFile", maxCount: 1 }, // AR model
+]), product_controller_1.ProductControllers.addProduct);
 // Get all products
 router.get("/", product_controller_1.ProductControllers.getAllProducts);
 // Get single product by ID
