@@ -21,6 +21,20 @@ const ProductSchema = new mongoose_1.Schema({
             ],
         },
     ],
+    customizationFields: [
+        {
+            key: { type: String, required: true }, // e.g. "customSize"
+            label: { type: String, required: true }, // e.g. "Custom Size"
+            type: {
+                type: String,
+                enum: ["text", "textarea", "number", "select", "checkbox"],
+                required: true,
+            },
+            required: { type: Boolean, default: false },
+            options: [{ type: String }], // only for dropdown/select
+            placeholder: { type: String },
+        },
+    ],
 }, { timestamps: true });
 const Product = (0, mongoose_1.model)("Product", ProductSchema);
 exports.default = Product;

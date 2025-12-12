@@ -14,6 +14,13 @@ export type TProduct = {
       discountedPrice: number;
     }[];
   }[];
+  customizationFields: {
+    key: string;
+    label: string;
+    type: "text" | "number" | "dropdown" | "checkbox" | "textarea";
+    options?: string[];
+    placeholder?: string;
+  };
   createdAt?: Date;
   updatedAt?: Date;
 };
