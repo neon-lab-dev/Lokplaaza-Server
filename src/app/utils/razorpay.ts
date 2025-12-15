@@ -1,6 +1,7 @@
 import Razorpay from "razorpay";
+import config from "../config";
 
 export const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_API_KEY!,
-  key_secret: process.env.RAZORPAY_API_SECRET!,
+  key_id: config.razorpay_api_key,
+  key_secret: config.razorpay_api_secret,
 });

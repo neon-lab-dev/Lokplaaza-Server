@@ -11,10 +11,6 @@ const generateOrderId = () => {
 };
 
 const checkout = async (amount: number) => {
-  if (!amount || amount <= 0) {
-    throw new Error("Invalid payment amount");
-  }
-
   const razorpayOrder = await razorpay.orders.create({
     amount: amount * 100, //in paisa
     currency: "INR",
@@ -25,7 +21,7 @@ const checkout = async (amount: number) => {
 
 // Verify payment
 const verifyPayment = async (razorpayPaymentId: string) => {
-  return `${process.env.PAYMENT_REDIRECT_URL}-success?type=product&orderId=${razorpayPaymentId}`;
+  return `${process.env.PAYMENT_REDIRECT_URL}?orderId=${razorpayPaymentId}`;
 };
 
 // Create Razorpay order
@@ -104,41 +100,132 @@ const getAllOrders = async (
   page = 1,
   limit = 10
 ) => {
-  const query: any = {};
+  const skip = (page - 1) * limit;
+
+  const matchStage: any = {};
 
   // Status filter
   if (status && status !== "all") {
-    query.status = { $regex: status, $options: "i" };
+    matchStage.status = status;
   }
 
-  // Pagination
-  const skip = (page - 1) * limit;
-
-  // Base query
-  let mongooseQuery = Order.find(query)
-    .populate(
-      "userId",
-      "name email phoneNumber pinCode city addressLine1 addressLine2"
-    )
-    .skip(skip)
-    .limit(limit);
-
-  // Apply keyword search (orderId + user fields)
+  // Keyword search
   if (keyword) {
-    mongooseQuery = mongooseQuery.find({
-      $or: [
-        { orderId: { $regex: keyword, $options: "i" } },
-        { "userId.name": { $regex: keyword, $options: "i" } },
-        { "userId.email": { $regex: keyword, $options: "i" } },
-        { "userId.phoneNumber": { $regex: keyword, $options: "i" } },
-      ],
-    });
+    matchStage.$or = [
+      { orderId: { $regex: keyword, $options: "i" } },
+      { "user.name": { $regex: keyword, $options: "i" } },
+      { "user.email": { $regex: keyword, $options: "i" } },
+      { "user.phoneNumber": { $regex: keyword, $options: "i" } },
+    ];
   }
 
-  const [orders, total] = await Promise.all([
-    mongooseQuery.sort({ createdAt: -1 }),
-    Order.countDocuments(query),
+  const pipeline: any = [
+    {
+      $lookup: {
+        from: "users",
+        localField: "userId",
+        foreignField: "_id",
+        as: "user",
+      },
+    },
+    { $unwind: "$user" },
+
+    {
+      $lookup: {
+        from: "products",
+        localField: "orderedItems.productId",
+        foreignField: "_id",
+        as: "products",
+      },
+    },
+
+    {
+      $addFields: {
+        orderedItems: {
+          $map: {
+            input: "$orderedItems",
+            as: "item",
+            in: {
+              $mergeObjects: [
+                "$$item",
+                {
+                  product: {
+                    $arrayElemAt: [
+                      {
+                        $filter: {
+                          input: "$products",
+                          as: "p",
+                          cond: { $eq: ["$$p._id", "$$item.productId"] },
+                        },
+                      },
+                      0,
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
+    },
+
+    { $match: matchStage },
+
+    { $sort: { createdAt: -1 } },
+
+    { $skip: skip },
+    { $limit: limit },
+    {
+      $project: {
+        orderId: 1,
+        status: 1,
+        totalAmount: 1,
+        createdAt: 1,
+        orderedItems: {
+          name: 1,
+          quantity: 1,
+          size: 1,
+          color: 1,
+          price: 1,
+          productId: 1,
+          product: {
+            category: 1,
+            name: 1,
+          },
+        },
+        user: {
+          name: 1,
+          email: 1,
+          phoneNumber: 1,
+          city: 1,
+          pinCode: 1,
+          addressLine1: 1,
+          addressLine2: 1,
+        },
+      },
+    },
+  ];
+
+  const countPipeline = [
+    {
+      $lookup: {
+        from: "users",
+        localField: "userId",
+        foreignField: "_id",
+        as: "user",
+      },
+    },
+    { $unwind: "$user" },
+    { $match: matchStage },
+    { $count: "total" },
+  ];
+
+  const [orders, countResult] = await Promise.all([
+    Order.aggregate(pipeline),
+    Order.aggregate(countPipeline),
   ]);
+
+  const total = countResult[0]?.total || 0;
 
   return {
     meta: {
@@ -153,7 +240,7 @@ const getAllOrders = async (
 
 // Get single order by ID
 const getSingleOrderById = async (orderId: string) => {
-  const result = await Order.findById( orderId )
+  const result = await Order.findOne({ orderId })
     .populate(
       "userId",
       "name email phoneNumber pinCode city addressLine1 addressLine2"

@@ -18,18 +18,14 @@ const checkout = catchAsync(async (req, res) => {
 const verifyPayment = catchAsync(async (req, res) => {
   const { razorpay_payment_id } = req.body;
 
-  const redirectUrl =
-    await OrderService.verifyPayment(razorpay_payment_id);
+  const redirectUrl = await OrderService.verifyPayment(razorpay_payment_id);
 
   return res.redirect(redirectUrl);
 });
 
 // Create order (customer)
 const createOrder = catchAsync(async (req, res) => {
-  const result = await OrderService.createOrder(
-    req.user,
-    req.body
-  );
+  const result = await OrderService.createOrder(req.user, req.body);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -77,8 +73,7 @@ const getSingleOrderById = catchAsync(async (req, res) => {
 // Get all orders for a particular user
 const getOrdersByUserId = catchAsync(async (req, res) => {
   const { userId } = req.params;
-  const result =
-    await OrderService.geOrdersByUserId(userId);
+  const result = await OrderService.geOrdersByUserId(userId);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

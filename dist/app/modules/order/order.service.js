@@ -23,9 +23,6 @@ const generateOrderId = () => {
     return "ORD-" + Math.floor(1000 + Math.random() * 9000);
 };
 const checkout = (amount) => __awaiter(void 0, void 0, void 0, function* () {
-    if (!amount || amount <= 0) {
-        throw new Error("Invalid payment amount");
-    }
     const razorpayOrder = yield razorpay_1.razorpay.orders.create({
         amount: amount * 100, //in paisa
         currency: "INR",
@@ -34,7 +31,7 @@ const checkout = (amount) => __awaiter(void 0, void 0, void 0, function* () {
 });
 // Verify payment
 const verifyPayment = (razorpayPaymentId) => __awaiter(void 0, void 0, void 0, function* () {
-    return `${process.env.PAYMENT_REDIRECT_URL}-success?type=product&orderId=${razorpayPaymentId}`;
+    return `${process.env.PAYMENT_REDIRECT_URL}?orderId=${razorpayPaymentId}`;
 });
 // Create Razorpay order
 const createOrder = (user, payload) => __awaiter(void 0, void 0, void 0, function* () {
@@ -84,33 +81,121 @@ const createOrder = (user, payload) => __awaiter(void 0, void 0, void 0, functio
 });
 // Get all orders
 const getAllOrders = (keyword_1, status_1, ...args_1) => __awaiter(void 0, [keyword_1, status_1, ...args_1], void 0, function* (keyword, status, page = 1, limit = 10) {
-    const query = {};
+    var _a;
+    const skip = (page - 1) * limit;
+    const matchStage = {};
     // Status filter
     if (status && status !== "all") {
-        query.status = { $regex: status, $options: "i" };
+        matchStage.status = status;
     }
-    // Pagination
-    const skip = (page - 1) * limit;
-    // Base query
-    let mongooseQuery = order_model_1.Order.find(query)
-        .populate("userId", "name email phoneNumber pinCode city addressLine1 addressLine2")
-        .skip(skip)
-        .limit(limit);
-    // Apply keyword search (orderId + user fields)
+    // Keyword search
     if (keyword) {
-        mongooseQuery = mongooseQuery.find({
-            $or: [
-                { orderId: { $regex: keyword, $options: "i" } },
-                { "userId.name": { $regex: keyword, $options: "i" } },
-                { "userId.email": { $regex: keyword, $options: "i" } },
-                { "userId.phoneNumber": { $regex: keyword, $options: "i" } },
-            ],
-        });
+        matchStage.$or = [
+            { orderId: { $regex: keyword, $options: "i" } },
+            { "user.name": { $regex: keyword, $options: "i" } },
+            { "user.email": { $regex: keyword, $options: "i" } },
+            { "user.phoneNumber": { $regex: keyword, $options: "i" } },
+        ];
     }
-    const [orders, total] = yield Promise.all([
-        mongooseQuery.sort({ createdAt: -1 }),
-        order_model_1.Order.countDocuments(query),
+    const pipeline = [
+        {
+            $lookup: {
+                from: "users",
+                localField: "userId",
+                foreignField: "_id",
+                as: "user",
+            },
+        },
+        { $unwind: "$user" },
+        {
+            $lookup: {
+                from: "products",
+                localField: "orderedItems.productId",
+                foreignField: "_id",
+                as: "products",
+            },
+        },
+        {
+            $addFields: {
+                orderedItems: {
+                    $map: {
+                        input: "$orderedItems",
+                        as: "item",
+                        in: {
+                            $mergeObjects: [
+                                "$$item",
+                                {
+                                    product: {
+                                        $arrayElemAt: [
+                                            {
+                                                $filter: {
+                                                    input: "$products",
+                                                    as: "p",
+                                                    cond: { $eq: ["$$p._id", "$$item.productId"] },
+                                                },
+                                            },
+                                            0,
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                },
+            },
+        },
+        { $match: matchStage },
+        { $sort: { createdAt: -1 } },
+        { $skip: skip },
+        { $limit: limit },
+        {
+            $project: {
+                orderId: 1,
+                status: 1,
+                totalAmount: 1,
+                createdAt: 1,
+                orderedItems: {
+                    name: 1,
+                    quantity: 1,
+                    size: 1,
+                    color: 1,
+                    price: 1,
+                    productId: 1,
+                    product: {
+                        category: 1,
+                        name: 1,
+                    },
+                },
+                user: {
+                    name: 1,
+                    email: 1,
+                    phoneNumber: 1,
+                    city: 1,
+                    pinCode: 1,
+                    addressLine1: 1,
+                    addressLine2: 1,
+                },
+            },
+        },
+    ];
+    const countPipeline = [
+        {
+            $lookup: {
+                from: "users",
+                localField: "userId",
+                foreignField: "_id",
+                as: "user",
+            },
+        },
+        { $unwind: "$user" },
+        { $match: matchStage },
+        { $count: "total" },
+    ];
+    const [orders, countResult] = yield Promise.all([
+        order_model_1.Order.aggregate(pipeline),
+        order_model_1.Order.aggregate(countPipeline),
     ]);
+    const total = ((_a = countResult[0]) === null || _a === void 0 ? void 0 : _a.total) || 0;
     return {
         meta: {
             total,
@@ -123,7 +208,7 @@ const getAllOrders = (keyword_1, status_1, ...args_1) => __awaiter(void 0, [keyw
 });
 // Get single order by ID
 const getSingleOrderById = (orderId) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield order_model_1.Order.findById(orderId)
+    const result = yield order_model_1.Order.findOne({ orderId })
         .populate("userId", "name email phoneNumber pinCode city addressLine1 addressLine2")
         .populate("orderedItems.productId", "name imageUrls category");
     if (!result) {
