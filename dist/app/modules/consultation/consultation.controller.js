@@ -17,7 +17,6 @@ const catchAsync_1 = __importDefault(require("../../utils/catchAsync"));
 const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 const http_status_1 = __importDefault(require("http-status"));
 const consultation_services_1 = require("./consultation.services");
-// Add Category
 const bookConsultation = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield consultation_services_1.ConsultationServices.bookConsultation(req.body);
     (0, sendResponse_1.default)(res, {
@@ -50,7 +49,6 @@ const getSingleConsultation = (0, catchAsync_1.default)((req, res) => __awaiter(
         data: result,
     });
 }));
-// Delete Category
 const deleteConsultation = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     const result = yield consultation_services_1.ConsultationServices.deleteConsultation(id);

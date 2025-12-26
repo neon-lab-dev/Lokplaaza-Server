@@ -4,13 +4,11 @@ import AppError from "../../errors/AppError";
 import { TConsultation } from "./consultation.interface";
 import Consultation from "./consultation.model";
 
-// Book Consultation
 const bookConsultation = async (payload: TConsultation) => {
   const result =  await Consultation.create(payload);
   return result;
 };
 
-// Get All Categories with search + pagination
 const getAllConsultations = async (keyword?: string, page = 1, limit = 10) => {
   const query: any = {};
 
@@ -39,7 +37,6 @@ const getAllConsultations = async (keyword?: string, page = 1, limit = 10) => {
   };
 };
 
-// Get Single Consultation
 const getSingleConsultation= async (id: string) => {
   const result = await Consultation.findById(id);
   if (!result) {
@@ -48,7 +45,6 @@ const getSingleConsultation= async (id: string) => {
   return result;
 };
 
-// Delete Consultation
 const deleteConsultation = async (id: string) => {
   const result = await Consultation.findByIdAndDelete(id);
   if (!result) {

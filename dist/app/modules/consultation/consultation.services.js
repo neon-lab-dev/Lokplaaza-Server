@@ -17,12 +17,10 @@ exports.ConsultationServices = void 0;
 const http_status_1 = __importDefault(require("http-status"));
 const AppError_1 = __importDefault(require("../../errors/AppError"));
 const consultation_model_1 = __importDefault(require("./consultation.model"));
-// Book Consultation
 const bookConsultation = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield consultation_model_1.default.create(payload);
     return result;
 });
-// Get All Categories with search + pagination
 const getAllConsultations = (keyword_1, ...args_1) => __awaiter(void 0, [keyword_1, ...args_1], void 0, function* (keyword, page = 1, limit = 10) {
     const query = {};
     if (keyword) {
@@ -45,7 +43,6 @@ const getAllConsultations = (keyword_1, ...args_1) => __awaiter(void 0, [keyword
         },
     };
 });
-// Get Single Consultation
 const getSingleConsultation = (id) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield consultation_model_1.default.findById(id);
     if (!result) {
@@ -53,7 +50,6 @@ const getSingleConsultation = (id) => __awaiter(void 0, void 0, void 0, function
     }
     return result;
 });
-// Delete Consultation
 const deleteConsultation = (id) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield consultation_model_1.default.findByIdAndDelete(id);
     if (!result) {

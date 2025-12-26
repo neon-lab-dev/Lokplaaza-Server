@@ -3,7 +3,6 @@ import sendResponse from "../../utils/sendResponse";
 import httpStatus from "http-status";
 import { ConsultationServices } from "./consultation.services";
 
-// Add Category
 const bookConsultation = catchAsync(async (req, res) => {
   const result = await ConsultationServices.bookConsultation(req.body);
 
@@ -47,7 +46,6 @@ const getSingleConsultation = catchAsync(async (req, res) => {
   });
 });
 
-// Delete Category
 const deleteConsultation = catchAsync(async (req, res) => {
   const { id } = req.params;
   const result = await ConsultationServices.deleteConsultation(id);
