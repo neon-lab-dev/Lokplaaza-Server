@@ -18,10 +18,4 @@ router.get(
   InspirationRequestControllers.getAllInspirationRequests
 );
 
-router.delete(
-  "/delete/:id",
-  auth(UserRole.admin, UserRole.moderator),
-  InspirationRequestControllers.deleteInspirationRequest
-);
-
 export const InspirationRequestRoutes = router;

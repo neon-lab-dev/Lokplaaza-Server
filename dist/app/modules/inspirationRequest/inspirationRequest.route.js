@@ -12,5 +12,4 @@ const auth_constannts_1 = require("../auth/auth.constannts");
 const router = express_1.default.Router();
 router.post("/upload", multer_config_1.multerUpload.single("file"), inspirationRequest_controller_1.InspirationRequestControllers.uploadInspirationImage);
 router.get("/", (0, auth_1.default)(auth_constannts_1.UserRole.admin, auth_constannts_1.UserRole.moderator), inspirationRequest_controller_1.InspirationRequestControllers.getAllInspirationRequests);
-router.delete("/delete/:id", (0, auth_1.default)(auth_constannts_1.UserRole.admin, auth_constannts_1.UserRole.moderator), inspirationRequest_controller_1.InspirationRequestControllers.deleteInspirationRequest);
 exports.InspirationRequestRoutes = router;

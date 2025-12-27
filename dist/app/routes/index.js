@@ -8,6 +8,7 @@ const order_route_1 = require("../modules/order/order.route");
 const category_route_1 = require("../modules/category/category.route");
 const consultation_route_1 = require("../modules/consultation/consultation.route");
 const inspirationRequest_route_1 = require("../modules/inspirationRequest/inspirationRequest.route");
+const customization_route_1 = require("../modules/customization/customization.route");
 const router = (0, express_1.Router)();
 const moduleRoutes = [
     {
@@ -37,6 +38,10 @@ const moduleRoutes = [
     {
         path: "/inspirationRequest",
         route: inspirationRequest_route_1.InspirationRequestRoutes,
+    },
+    {
+        path: "/customizationRequest",
+        route: customization_route_1.CustomizationRoutes,
     },
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));

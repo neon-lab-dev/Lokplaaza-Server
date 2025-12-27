@@ -40,19 +40,7 @@ const getAllInspirationRequests = (0, catchAsync_1.default)((_req, res) => __awa
         },
     });
 }));
-// Delete inspiration request (admin)
-const deleteInspirationRequest = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.params;
-    yield inspirationRequest_services_1.InspirationRequestServices.deleteInspirationRequest(id);
-    (0, sendResponse_1.default)(res, {
-        statusCode: http_status_1.default.OK,
-        success: true,
-        message: "Inspiration request deleted successfully",
-        data: null,
-    });
-}));
 exports.InspirationRequestControllers = {
     uploadInspirationImage,
     getAllInspirationRequests,
-    deleteInspirationRequest,
 };
