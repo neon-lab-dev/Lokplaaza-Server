@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import jwt from 'jsonwebtoken';
 
-export const createToekn = (jwtPayload : {email:string, role:string, userId:string}, secret:string, expiresIn:string) => {
+export const createToekn = (jwtPayload : {email:string, role:string, userId:string}, secret:any, expiresIn:any) => {
     return jwt.sign(jwtPayload, secret, {expiresIn});
 };
