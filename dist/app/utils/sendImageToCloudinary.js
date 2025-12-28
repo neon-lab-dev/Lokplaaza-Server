@@ -47,11 +47,11 @@ const sendImageToCloudinary = (imageName, path) => {
 exports.sendImageToCloudinary = sendImageToCloudinary;
 const storage = multer_1.default.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, process.cwd() + "/tmp");
+        cb(null, "/tmp");
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-        cb(null, file.fieldname + "-" + uniqueSuffix);
+        cb(null, file.fieldname + "-" + uniqueSuffix + ".png");
     },
 });
-exports.upload = (0, multer_1.default)({ storage: storage });
+exports.upload = (0, multer_1.default)({ storage });
