@@ -30,8 +30,8 @@ const getAllInspirationRequests = catchAsync(async (_req, res) => {
     success: true,
     message: "Inspiration requests fetched successfully",
     data: {
-      consultations: result, // matches frontend usage
-    },
+      requests: result, // matches frontend usage
+    }, 
   });
 });
 

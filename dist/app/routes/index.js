@@ -9,11 +9,16 @@ const category_route_1 = require("../modules/category/category.route");
 const consultation_route_1 = require("../modules/consultation/consultation.route");
 const inspirationRequest_route_1 = require("../modules/inspirationRequest/inspirationRequest.route");
 const customization_route_1 = require("../modules/customization/customization.route");
+const admin_route_1 = require("../modules/admin/admin.route");
 const router = (0, express_1.Router)();
 const moduleRoutes = [
     {
         path: "/user",
-        route: users_route_1.userRoutes,
+        route: users_route_1.UserRoutes,
+    },
+    {
+        path: "/admin",
+        route: admin_route_1.AdminRoutes,
     },
     {
         path: "/auth",
