@@ -3,7 +3,6 @@ import httpStatus from "http-status";
 import AppError from "../../errors/AppError";
 import Product from "../product/product.model";
 import { razorpay } from "./../../utils/razorpay";
-import { TOrder } from "./order.interface";
 import { Order } from "./order.model";
 
 const generateOrderId = () => {
@@ -25,15 +24,51 @@ const verifyPayment = async (razorpayPaymentId: string) => {
 };
 
 // Create Razorpay order
-const createOrder = async (user: any, payload: TOrder) => {
-  const productIds = payload.orderedItems.map((i) => i.productId);
-  const products = await Product.find({ _id: { $in: productIds } });
+const createOrder = async (user: any, payload: any[]) => {
 
-  if (products.length !== payload.orderedItems.length) {
-    throw new Error("Some products not found");
+  // Validate payload
+  if (!payload) {
+    throw new Error("Order payload is required");
   }
 
-  for (const item of payload.orderedItems) {
+  if (!Array.isArray(payload)) {
+    throw new Error("Payload must be an array of order items");
+  }
+
+  if (payload.length === 0) {
+    throw new Error("Order must contain at least one item");
+  }
+
+  // Validate each order item has required fields
+  for (const item of payload) {
+    if (!item.productId) {
+      throw new Error("Each order item must have a productId");
+    }
+    if (!item.color) {
+      throw new Error("Each order item must have a color");
+    }
+    if (!item.size) {
+      throw new Error("Each order item must have a size");
+    }
+    if (!item.quantity || item.quantity <= 0) {
+      throw new Error("Each order item must have a valid quantity");
+    }
+  }
+
+  const productIds = payload.map((i) => i.productId);
+  const products = await Product.find({ _id: { $in: productIds } });
+
+  if (products.length !== payload.length) {
+    // Find which products are missing
+    const foundProductIds = products.map(p => p._id.toString());
+    const missingProducts = payload.filter(item => !foundProductIds.includes(item.productId.toString()));
+    console.log("Missing products:", missingProducts);
+    throw new Error(`Some products not found: ${missingProducts.map(m => m.productId).join(', ')}`);
+  }
+
+  let totalAmount = 0;
+
+  for (const item of payload) {
     const product = products.find(
       (p) => p._id.toString() === item.productId.toString()
     );
@@ -42,49 +77,72 @@ const createOrder = async (user: any, payload: TOrder) => {
       throw new Error(`Product ${item.productId} not found`);
     }
 
-    //Check color availability
+    // Calculate total amount
+    totalAmount += item.price * item.quantity;
+
+    // Check if product has colors array
+    if (!product.colors || !Array.isArray(product.colors)) {
+      throw new Error(`Product ${product.name} has no color information`);
+    }
+
+    // Check color availability
     const colorObj = product.colors.find(
       (c: any) => c.colorName === item.color
     );
     if (!colorObj) {
       throw new Error(
-        `Color ${item.color} is not available for product ${product.name}`
+        `Color ${item.color} is not available for product ${product.name}. Available colors: ${product.colors.map((c: any) => c.colorName).join(', ')}`
       );
     }
 
-    //Check size availability under the color
+    // Check if color has sizes array
+    if (!colorObj.sizes || !Array.isArray(colorObj.sizes)) {
+      throw new Error(
+        `Color ${item.color} for product ${product.name} has no size information`
+      );
+    }
+
+    // Check size availability under the color
     const sizeObj = colorObj.sizes.find((s: any) => s.size === item.size);
     if (!sizeObj) {
       throw new Error(
-        `Size ${item.size} is not available for color ${item.color} of product ${product.name}`
+        `Size ${item.size} is not available for color ${item.color} of product ${product.name}. Available sizes: ${colorObj.sizes.map((s: any) => s.size).join(', ')}`
       );
     }
 
-    //Check quantity availability
+    // Check quantity availability
     if (sizeObj.quantity < item.quantity) {
       throw new Error(
         `Not enough stock for size ${item.size} of color ${item.color} in product ${product.name}. Available: ${sizeObj.quantity}`
       );
     }
 
-    //Reduce stock
+    // Reduce stock
     sizeObj.quantity -= item.quantity;
     if (sizeObj.quantity < 0) sizeObj.quantity = 0;
 
-    //Save updated product
+    // Save updated product
     await product.save();
   }
 
   // Generate Order ID
   const orderId = generateOrderId();
 
-  const orderedItems = payload?.orderedItems;
+  const orderedItems = payload.map(item => ({
+    productId: item.productId,
+    name: item.name,
+    image: item.image,
+    color: item.color,
+    size: item.size,
+    quantity: item.quantity,
+    price: item.price
+  }));
 
   const payloadData = {
     orderId,
     userId: user?.userId,
     orderedItems,
-    totalAmount: payload.totalAmount,
+    totalAmount: totalAmount,
     status: "pending",
   };
 
