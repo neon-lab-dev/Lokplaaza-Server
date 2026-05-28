@@ -6,6 +6,7 @@ const ConsultationSchema = new Schema<TConsultation>(
     name: { type: String, required: true, trim: true },
     email: { type: String, required: false, trim: true },
     phoneNumber: { type: String, required: true, trim: true },
+    budgetRange: { type: String, required: true, trim: true },
   },
   {
     timestamps: true,
