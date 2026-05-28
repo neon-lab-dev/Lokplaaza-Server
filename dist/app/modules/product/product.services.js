@@ -8,11 +8,23 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProductServices = void 0;
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const http_status_1 = __importDefault(require("http-status"));
 const product_model_1 = __importDefault(require("./product.model"));
@@ -118,12 +130,73 @@ const updateProduct = (id, payload, files) => __awaiter(void 0, void 0, void 0, 
     if (!existing) {
         throw new AppError_1.default(http_status_1.default.NOT_FOUND, "Product not found");
     }
-    let imageUrls;
+    let finalImageUrls = [];
+    // Parse removedImageUrls if it's a string (from FormData)
+    let removedImageUrls = payload.removedImageUrls;
+    if (typeof removedImageUrls === 'string') {
+        try {
+            removedImageUrls = JSON.parse(removedImageUrls);
+        }
+        catch (error) {
+            console.error("Failed to parse removedImageUrls", error);
+            removedImageUrls = [];
+        }
+    }
+    // Also parse existingImageUrls if it comes from frontend
+    let frontendExistingImageUrls = payload.existingImageUrls;
+    if (typeof frontendExistingImageUrls === 'string') {
+        try {
+            frontendExistingImageUrls = JSON.parse(frontendExistingImageUrls);
+        }
+        catch (error) {
+            console.error("Failed to parse existingImageUrls", error);
+            frontendExistingImageUrls = [];
+        }
+    }
+    // Case 1: If frontend provided existingImageUrls, use those (after removals)
+    if (frontendExistingImageUrls && frontendExistingImageUrls.length > 0) {
+        // Start with the images frontend wants to keep
+        finalImageUrls = [...frontendExistingImageUrls];
+        // Remove any that are marked for deletion
+        if (removedImageUrls && removedImageUrls.length > 0 && Array.isArray(removedImageUrls)) {
+            finalImageUrls = finalImageUrls.filter((url) => !removedImageUrls.includes(url));
+        }
+    }
+    // Case 2: No frontend existingImageUrls, use current images but remove specified ones
+    else if (existing.imageUrls && existing.imageUrls.length > 0) {
+        finalImageUrls = [...existing.imageUrls];
+        if (removedImageUrls && removedImageUrls.length > 0 && Array.isArray(removedImageUrls)) {
+            finalImageUrls = finalImageUrls.filter((url) => !removedImageUrls.includes(url));
+        }
+    }
+    // Add new uploaded images
     if (files && files.length > 0) {
         const uploadedImages = yield Promise.all(files.map((file) => (0, sendImageToCloudinary_1.sendImageToCloudinary)(file.originalname, file.path)));
-        imageUrls = uploadedImages.map((img) => img.secure_url);
+        const newImageUrls = uploadedImages.map((img) => img.secure_url);
+        finalImageUrls = [...finalImageUrls, ...newImageUrls];
     }
-    const updatePayload = Object.assign(Object.assign({}, payload), (imageUrls && { imageUrls }));
+    // Remove duplicates
+    finalImageUrls = [...new Set(finalImageUrls)];
+    // Delete removed images from Cloudinary to save storage
+    if (removedImageUrls && removedImageUrls.length > 0 && Array.isArray(removedImageUrls)) {
+        yield Promise.all(removedImageUrls.map((url) => __awaiter(void 0, void 0, void 0, function* () {
+            var _a;
+            try {
+                // Extract public ID from Cloudinary URL
+                const publicId = (_a = url.split('/').pop()) === null || _a === void 0 ? void 0 : _a.split('.')[0];
+                if (publicId) {
+                    yield cloudinary_1.v2.uploader.destroy(publicId);
+                }
+                console.log(`Deleted image from Cloudinary: ${publicId}`);
+            }
+            catch (error) {
+                console.error(`Failed to delete image from Cloudinary: ${url}`, error);
+            }
+        })));
+    }
+    // Remove the image-related fields from payload before updating
+    const { removedImageUrls: _, existingImageUrls: __ } = payload, cleanPayload = __rest(payload, ["removedImageUrls", "existingImageUrls"]);
+    const updatePayload = Object.assign(Object.assign({}, cleanPayload), { imageUrls: finalImageUrls });
     const result = yield product_model_1.default.findByIdAndUpdate(id, updatePayload, {
         new: true,
         runValidators: true,

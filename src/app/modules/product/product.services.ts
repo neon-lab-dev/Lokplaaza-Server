@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import httpStatus from "http-status";
 import Product from "./product.model";
@@ -35,12 +36,12 @@ const addProduct = async (
     // Upload GLB file to S3
     if (glbFile) {
       console.log("Uploading GLB file to S3:", glbFile.originalname);
-      
+
       // Optional: Validate file type
       if (!glbFile.mimetype.includes('gltf') && !glbFile.originalname.endsWith('.glb')) {
         throw new Error('Invalid file type. Only GLB files are allowed.');
       }
-      
+
       // Upload to S3
       const uploadedGlb = await uploadToS3(glbFile, 'products/glb');
       arFileUrl = uploadedGlb.url;
@@ -60,7 +61,7 @@ const addProduct = async (
 
     const result = await Product.create(payloadData);
     return result;
-    
+
   } catch (error) {
     // Cleanup: If product creation fails, delete uploaded files
     if (arFileUrl) {
@@ -70,7 +71,6 @@ const addProduct = async (
     throw error;
   }
 };
-
 
 // Get all products
 const getAllProducts = async (
@@ -123,7 +123,6 @@ const getAllProducts = async (
   };
 };
 
-
 // Get single product by ID
 const getSingleProductById = async (id: string) => {
   const result = await Product.findById(id);
@@ -136,8 +135,8 @@ const getSingleProductById = async (id: string) => {
 // Update product
 const updateProduct = async (
   id: string,
-  payload: Partial<TProduct>,
-  files?: Express.Multer.File[]
+  payload: any,
+  files?: Express.Multer.File[],
 ) => {
   const existing = await Product.findById(id);
 
@@ -145,18 +144,89 @@ const updateProduct = async (
     throw new AppError(httpStatus.NOT_FOUND, "Product not found");
   }
 
-  let imageUrls: string[] | undefined;
+  let finalImageUrls: string[] = [];
 
+  // Parse removedImageUrls if it's a string (from FormData)
+  let removedImageUrls = payload.removedImageUrls;
+  if (typeof removedImageUrls === 'string') {
+    try {
+      removedImageUrls = JSON.parse(removedImageUrls);
+    } catch (error) {
+      console.error("Failed to parse removedImageUrls", error);
+      removedImageUrls = [];
+    }
+  }
+
+  // Also parse existingImageUrls if it comes from frontend
+  let frontendExistingImageUrls = payload.existingImageUrls;
+  if (typeof frontendExistingImageUrls === 'string') {
+    try {
+      frontendExistingImageUrls = JSON.parse(frontendExistingImageUrls);
+    } catch (error) {
+      console.error("Failed to parse existingImageUrls", error);
+      frontendExistingImageUrls = [];
+    }
+  }
+
+  // Case 1: If frontend provided existingImageUrls, use those (after removals)
+  if (frontendExistingImageUrls && frontendExistingImageUrls.length > 0) {
+    // Start with the images frontend wants to keep
+    finalImageUrls = [...frontendExistingImageUrls];
+
+    // Remove any that are marked for deletion
+    if (removedImageUrls && removedImageUrls.length > 0 && Array.isArray(removedImageUrls)) {
+      finalImageUrls = finalImageUrls.filter(
+        (url) => !removedImageUrls.includes(url)
+      );
+    }
+  }
+  // Case 2: No frontend existingImageUrls, use current images but remove specified ones
+  else if (existing.imageUrls && existing.imageUrls.length > 0) {
+    finalImageUrls = [...existing.imageUrls];
+
+    if (removedImageUrls && removedImageUrls.length > 0 && Array.isArray(removedImageUrls)) {
+      finalImageUrls = finalImageUrls.filter(
+        (url) => !removedImageUrls.includes(url)
+      );
+    }
+  }
+
+  // Add new uploaded images
   if (files && files.length > 0) {
     const uploadedImages = await Promise.all(
       files.map((file) => sendImageToCloudinary(file.originalname, file.path))
     );
-    imageUrls = uploadedImages.map((img) => img.secure_url);
+    const newImageUrls = uploadedImages.map((img) => img.secure_url);
+    finalImageUrls = [...finalImageUrls, ...newImageUrls];
   }
 
+  // Remove duplicates
+  finalImageUrls = [...new Set(finalImageUrls)];
+
+  // Delete removed images from Cloudinary to save storage
+  if (removedImageUrls && removedImageUrls.length > 0 && Array.isArray(removedImageUrls)) {
+    await Promise.all(
+      removedImageUrls.map(async (url: string) => {
+        try {
+          // Extract public ID from Cloudinary URL
+          const publicId = url.split('/').pop()?.split('.')[0];
+          if (publicId) {
+            await cloudinary.uploader.destroy(publicId);
+          }
+          console.log(`Deleted image from Cloudinary: ${publicId}`);
+        } catch (error) {
+          console.error(`Failed to delete image from Cloudinary: ${url}`, error);
+        }
+      })
+    );
+  }
+
+  // Remove the image-related fields from payload before updating
+  const { removedImageUrls: _, existingImageUrls: __, ...cleanPayload } = payload;
+
   const updatePayload: Partial<TProduct> = {
-    ...payload,
-    ...(imageUrls && { imageUrls }),
+    ...cleanPayload,
+    imageUrls: finalImageUrls,
   };
 
   const result = await Product.findByIdAndUpdate(id, updatePayload, {
