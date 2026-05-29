@@ -11,7 +11,7 @@ const addProduct = catchAsync(async (req, res) => {
   };
 
   const imageFiles = files?.files || [];
-  const glbFile = files?.glbFile?.[0];
+  // const glbFile = files?.glbFile?.[0];
 
   if (imageFiles.length > 4) {
     throw new AppError(
@@ -20,7 +20,7 @@ const addProduct = catchAsync(async (req, res) => {
     );
   }
 
-  const result = await ProductServices.addProduct(req.body, imageFiles, glbFile);
+  const result = await ProductServices.addProduct(req.body, imageFiles);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

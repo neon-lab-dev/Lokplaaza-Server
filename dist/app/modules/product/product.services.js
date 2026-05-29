@@ -31,14 +31,14 @@ const product_model_1 = __importDefault(require("./product.model"));
 const cloudinary_1 = require("cloudinary");
 const sendImageToCloudinary_1 = require("../../utils/sendImageToCloudinary");
 const AppError_1 = __importDefault(require("../../errors/AppError"));
-const uploadToS3_1 = require("../../utils/uploadToS3");
+// import { uploadToS3 } from "../../utils/uploadToS3";
 cloudinary_1.v2.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 // Add product (admin only)
-const addProduct = (payload, imageFiles, glbFile) => __awaiter(void 0, void 0, void 0, function* () {
+const addProduct = (payload, imageFiles) => __awaiter(void 0, void 0, void 0, function* () {
     let imageUrls = [];
     let arFileUrl;
     try {
@@ -48,17 +48,15 @@ const addProduct = (payload, imageFiles, glbFile) => __awaiter(void 0, void 0, v
             imageUrls = uploadedImages.map((img) => img.secure_url);
         }
         // Upload GLB file to S3
-        if (glbFile) {
-            console.log("Uploading GLB file to S3:", glbFile.originalname);
-            // Optional: Validate file type
-            if (!glbFile.mimetype.includes('gltf') && !glbFile.originalname.endsWith('.glb')) {
-                throw new Error('Invalid file type. Only GLB files are allowed.');
-            }
-            // Upload to S3
-            const uploadedGlb = yield (0, uploadToS3_1.uploadToS3)(glbFile, 'products/glb');
-            arFileUrl = uploadedGlb.url;
-            console.log("GLB file uploaded to S3:", arFileUrl);
-        }
+        // if (glbFile) {
+        //   console.log("Uploading GLB file to S3:", glbFile.originalname);
+        //   if (!glbFile.mimetype.includes('gltf') && !glbFile.originalname.endsWith('.glb')) {
+        //     throw new Error('Invalid file type. Only GLB files are allowed.');
+        //   }
+        //   const uploadedGlb = await uploadToS3(glbFile, 'products/glb');
+        //   arFileUrl = uploadedGlb.url;
+        //   console.log("GLB file uploaded to S3:", arFileUrl);
+        // }
         // Generate custom productId like LOK-1234
         const randomNumber = Math.floor(1000 + Math.random() * 9000);
         const productId = `LOK-${randomNumber}`;

@@ -6,7 +6,7 @@ import { TProduct } from "./product.interface";
 import { v2 as cloudinary } from "cloudinary";
 import { sendImageToCloudinary } from "../../utils/sendImageToCloudinary";
 import AppError from "../../errors/AppError";
-import { uploadToS3 } from "../../utils/uploadToS3";
+// import { uploadToS3 } from "../../utils/uploadToS3";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -19,7 +19,7 @@ cloudinary.config({
 const addProduct = async (
   payload: TProduct,
   imageFiles?: Express.Multer.File[],
-  glbFile?: Express.Multer.File
+  // glbFile?: Express.Multer.File
 ) => {
   let imageUrls: string[] = [];
   let arFileUrl: string | undefined;
@@ -34,19 +34,17 @@ const addProduct = async (
     }
 
     // Upload GLB file to S3
-    if (glbFile) {
-      console.log("Uploading GLB file to S3:", glbFile.originalname);
+    // if (glbFile) {
+    //   console.log("Uploading GLB file to S3:", glbFile.originalname);
 
-      // Optional: Validate file type
-      if (!glbFile.mimetype.includes('gltf') && !glbFile.originalname.endsWith('.glb')) {
-        throw new Error('Invalid file type. Only GLB files are allowed.');
-      }
+    //   if (!glbFile.mimetype.includes('gltf') && !glbFile.originalname.endsWith('.glb')) {
+    //     throw new Error('Invalid file type. Only GLB files are allowed.');
+    //   }
 
-      // Upload to S3
-      const uploadedGlb = await uploadToS3(glbFile, 'products/glb');
-      arFileUrl = uploadedGlb.url;
-      console.log("GLB file uploaded to S3:", arFileUrl);
-    }
+    //   const uploadedGlb = await uploadToS3(glbFile, 'products/glb');
+    //   arFileUrl = uploadedGlb.url;
+    //   console.log("GLB file uploaded to S3:", arFileUrl);
+    // }
 
     // Generate custom productId like LOK-1234
     const randomNumber = Math.floor(1000 + Math.random() * 9000);
