@@ -17,7 +17,8 @@ app.use(express.json());
 // app.use(express.static("./uploads"));
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://lokplaaza.netlify.app", "http://13.205.43.25", "http://13.205.72.174"],
+    origin: ["http://localhost:3000", "https://lokplaaza.netlify.app", "http://13.205.43.25", "http://13.205.72.174", "https://lokplaaza.com",
+      "https://www.lokplaaza.com"],
     credentials: true,
   })
 );
